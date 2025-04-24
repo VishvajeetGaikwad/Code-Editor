@@ -38,7 +38,7 @@ export default function Home() {
       </div>
 
       <footer className="bg-black py-4 mt-6 text-neutral-200">
-        <p className="text-base font-semibold w-fit px-4 mx-auto">Made by <span className="text-primary">Dynamic Coding with Amit</span></p>
+        <p className="text-base font-semibold w-fit px-4 mx-auto">Made by <span className="text-primary">Made by Vishu with 💜</span></p>
       </footer>
     </div>
   );
