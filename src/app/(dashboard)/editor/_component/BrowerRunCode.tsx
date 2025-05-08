@@ -45,13 +45,14 @@ const BrowerRunCode = ({ children }: { children: React.ReactNode }) => {
   };
 
   // Debugging the iframeSrc construction
-  const iframeSrc =
-    projectId && input
-      ? `${process.env.NEXT_PUBLIC_BASE_URL}/api/file/${projectId}${input}`
-      : null;
+  const baseURL =
+    typeof window !== "undefined"
+      ? window.location.origin
+      : process.env.NEXT_PUBLIC_BASE_URL;
 
-  // Ensure iframeSrc is correctly logged before use
-  console.log("iframeSrc:", iframeSrc);
+  const iframeSrc =
+    projectId && input ? `${baseURL}/api/file/${projectId}${input}` : null;
+
 
   return (
     <div ref={containerRef}>
