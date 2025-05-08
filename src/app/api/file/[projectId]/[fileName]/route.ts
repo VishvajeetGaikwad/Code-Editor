@@ -39,6 +39,7 @@ export async function GET(
 
     const content = getFile.content;
 
+    // Handle HTML files specifically
     if (extension === "html") {
       const host = request.headers.get("host");
       const protocol = host?.includes("localhost") ? "http" : "https";
@@ -76,6 +77,7 @@ export async function GET(
       });
     }
   } catch (error) {
+    console.error("Error fetching file:", error); // Log the error for debugging
     return new NextResponse("Something went wrong", {
       status: 500,
       headers: {
