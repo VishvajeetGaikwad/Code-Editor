@@ -3,7 +3,9 @@ import { connectDB } from "@/config/connectDB";
 import FileModel from "@/models/FileModel";
 
 export async function GET(request: NextRequest) {
-  const { projectId, fileName } = request.nextUrl.pathname.split("/").slice(-2);
+  const pathname = request.nextUrl.pathname.split("/");
+  const projectId = pathname[pathname.length - 2];
+  const fileName = pathname[pathname.length - 1];
 
   if (!projectId || !fileName) {
     return new NextResponse("Missing projectId or fileName", {
