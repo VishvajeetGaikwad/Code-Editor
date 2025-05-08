@@ -4,8 +4,13 @@ import FileModel from "@/models/FileModel";
 
 export async function GET(request: NextRequest) {
   const pathname = request.nextUrl.pathname.split("/");
+  console.log("Pathname:", pathname); // Log pathname for debugging
+
   const projectId = pathname[pathname.length - 2];
   const fileName = pathname[pathname.length - 1];
+
+  console.log("Extracted projectId:", projectId);
+  console.log("Extracted fileName:", fileName);
 
   if (!projectId || !fileName) {
     return new NextResponse("Missing projectId or fileName", {
@@ -16,7 +21,6 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  // Extract file extension
   const extArray = fileName.split(".");
   const extension = extArray[extArray.length - 1];
 
@@ -38,14 +42,12 @@ export async function GET(request: NextRequest) {
 
     const content = getFile.content;
 
-    // Handle HTML files specifically
     if (extension === "html") {
       const host = request.headers.get("host");
       const protocol = host?.includes("localhost") ? "http" : "https";
       const DOMAIN = `${protocol}://${host}`;
       const URL = `${DOMAIN}/api/file/${projectId}`;
 
-      // Replace @/path with absolute URL for src/href
       const replaceHTML = content.replace(
         /(src|href)=["']@(.*?)["']/g,
         `$1="${URL}$2"`
