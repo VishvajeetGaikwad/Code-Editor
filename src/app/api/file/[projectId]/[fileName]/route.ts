@@ -4,9 +4,9 @@ import FileModel from "@/models/FileModel";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { projectId: string; fileName: string } }
+  context: { params: { projectId: string; fileName: string } }
 ) {
-  const { projectId, fileName } = params;
+  const { projectId, fileName } = context.params;
 
   if (!projectId || !fileName) {
     return new NextResponse("Missing projectId or fileName", {
