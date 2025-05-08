@@ -15,11 +15,19 @@ const BrowerRunCode = ({ children }: { children: React.ReactNode }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [drag, setDrag] = useState<boolean>(false);
   const searchParams = useSearchParams();
-  const fileName = searchParams.get("file");
-  const [input, setInput] = useState<string>(`/${fileName}` || "");
-  const { projectId } = useParams();
+
+  // Ensure 'fileName' is correctly obtained, fallback to "index.html"
+  const fileName = searchParams.get("file") || "index.html"; // Default to "index.html" if not provided
+  const [input, setInput] = useState<string>(`/${fileName}`); // Ensure the input always includes the slash
+
+  const { projectId } = useParams(); // Get project ID from URL
   const [refresh, setRefresh] = useState<boolean>(true);
-  const session = useSession()
+  const session = useSession();
+
+  // Debug: log projectId and input to ensure correct values
+  console.log("projectId:", projectId);
+  console.log("fileName:", fileName);
+  console.log("input:", input);
 
   const handleMouseDown = () => {
     setDrag(true);
@@ -29,12 +37,22 @@ const BrowerRunCode = ({ children }: { children: React.ReactNode }) => {
     setDrag(false);
   };
 
-  const handleRefresh = ()=>{
-    setRefresh(preve => !preve) // false
+  const handleRefresh = () => {
+    setRefresh((prev) => !prev); // Toggle refresh state
     setTimeout(() => {
-        setRefresh(preve => !preve) // true
+      setRefresh((prev) => !prev); // Reset refresh state to trigger re-render
     }, 1000);
-  }
+  };
+
+  // Debugging the iframeSrc construction
+  const iframeSrc =
+    projectId && input
+      ? `${process.env.NEXT_PUBLIC_BASE_URL}/api/file/${projectId}${input}`
+      : null;
+
+  // Ensure iframeSrc is correctly logged before use
+  console.log("iframeSrc:", iframeSrc);
+
   return (
     <div ref={containerRef}>
       {children}
@@ -67,8 +85,8 @@ const BrowerRunCode = ({ children }: { children: React.ReactNode }) => {
               <RotateCw
                 size={16}
                 className={cn(
-                    "absolute top-2 left-2 hover:text-primary cursor-pointer",
-                    !refresh && "animate-spin"
+                  "absolute top-2 left-2 hover:text-primary cursor-pointer",
+                  !refresh && "animate-spin"
                 )}
                 onClick={handleRefresh}
               />
@@ -77,19 +95,19 @@ const BrowerRunCode = ({ children }: { children: React.ReactNode }) => {
                 target="_blank"
               >
                 <ExternalLink
-                    size={16}
-                    className={cn(
-                        "absolute top-2 right-2 hover:text-primary cursor-pointer"
-                    )}
+                  size={16}
+                  className={cn(
+                    "absolute top-2 right-2 hover:text-primary cursor-pointer"
+                  )}
                 />
               </Link>
-              
             </div>
             <div className="h-full w-full">
-              {refresh && (
+              {/* Only render iframe if iframeSrc is available */}
+              {refresh && iframeSrc && (
                 <iframe
                   className="w-full h-full min-h-full min-w-full"
-                  src={`${process.env.NEXT_PUBLIC_BASE_URL}/api/file/${projectId}/${input}`}
+                  src={iframeSrc}
                 />
               )}
             </div>

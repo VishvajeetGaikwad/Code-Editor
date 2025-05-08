@@ -4,75 +4,80 @@ import FileModel from "@/models/FileModel";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ projectId: string; fileName: string }> }
+  { params }: { params: { projectId: string; fileName: string } }
 ) {
-  const { projectId, fileName } = await params;
+  const { projectId, fileName } = params;
 
   if (!projectId || !fileName) {
-    return new NextResponse("Provided projectId and fileName", {
+    return new NextResponse("Missing projectId or fileName", {
+      status: 400,
       headers: {
         "content-type": "text/html",
       },
     });
   }
 
-  //get extension of fileName
-  const extArray = fileName?.toString()?.split(".");
-  const extension = extArray[extArray?.length - 1];
+  // Extract file extension
+  const extArray = fileName.split(".");
+  const extension = extArray[extArray.length - 1];
 
   try {
     await connectDB();
-
     const getFile = await FileModel.findOne({
       name: fileName,
       projectId: projectId,
     });
 
-    const content = getFile.content
+    if (!getFile) {
+      return new NextResponse("File not found", {
+        status: 404,
+        headers: {
+          "content-type": "text/html",
+        },
+      });
+    }
+
+    const content = getFile.content;
 
     if (extension === "html") {
-      //@/style.css
-      //http://localhost:3000/api/file/projectId/fileNamewithExtension
-      //src="@/" => /http://localhost:3000/api/file/projectId
-
-      const host = request.headers.get("host"); //domain
+      const host = request.headers.get("host");
       const protocol = host?.includes("localhost") ? "http" : "https";
       const DOMAIN = `${protocol}://${host}`;
+      const URL = `${DOMAIN}/api/file/${projectId}`;
 
-      const URL = `${DOMAIN}/api/file/${projectId}`
-      const replaceHTML = content.replace(/(src|href)=["']@(.*?)["']/g,`$1=${URL}$2`);
+      // Replace @/path with absolute URL for src/href
+      const replaceHTML = content.replace(
+        /(src|href)=["']@(.*?)["']/g,
+        `$1="${URL}$2"`
+      );
 
       return new NextResponse(replaceHTML, {
         headers: {
           "content-type": "text/html",
         },
       });
-    }
-    else if(extension === 'css'){
-        return new NextResponse(content, {
-            headers: {
-              "content-type": "text/css",
-            },
-          }); 
-    }
-    else if(extension === 'js'){
-        return new NextResponse(content, {
-            headers: {
-              "content-type": "text/javascript",
-            },
-          }); 
-    }
-
-
-    return new NextResponse(content, {
+    } else if (extension === "css") {
+      return new NextResponse(content, {
         headers: {
-          "content-type": "text/text",
+          "content-type": "text/css",
         },
-    }); 
-
-
+      });
+    } else if (extension === "js") {
+      return new NextResponse(content, {
+        headers: {
+          "content-type": "text/javascript",
+        },
+      });
+    } else {
+      return new NextResponse(content, {
+        headers: {
+          "content-type": "text/plain",
+        },
+      });
+    }
   } catch (error) {
     return new NextResponse("Something went wrong", {
+      status: 500,
       headers: {
         "content-type": "text/html",
       },
